@@ -1,5 +1,9 @@
 # 《`CUDA` 编程：基础与实践》源代码
 
+
+## I am writing a simplified English version of the book
+* Chapter 1 (finished): https://github.com/brucefan1983/CUDA-Programming/blob/master/src/01-introduction/readme.md
+* Chapter 2 (unfinished): https://github.com/brucefan1983/CUDA-Programming/blob/master/src/02-thread-organization/readme.md
   
 ## 相关仓库
 * 由琪同学正在用 pyCUDA 实现本书中的范例，见如下仓库：
@@ -7,19 +11,18 @@ https://github.com/YouQixiaowu/CUDA-Programming-with-Python
 
 
 ## 关于本书：
-  * 将于 2020 年由清华大学出版社出版，语言为中文。 **前 8 章书稿已经公开，见本仓库的 PDF 文件。如果您想尽早阅读余下的章节，请在前 8 章书稿中找出 8 个错误（包括知识性错误、错别字、前后不一致等），然后私下联系我。邮箱：brucenju(at)gmail.com。**
+  * 已交稿，将于 2020 年由清华大学出版社出版，语言为中文。 
   * 覆盖开普勒到图灵（计算能力从 3.0 到 7.5）的所有 GPU 架构。
   * 尽量同时照顾 Windows 和 Linux 用户。
   * 假设读者有如下基础：
-    * 熟悉 `C++` (对全书来说)；
-    * 熟悉本科水平的物理（对第 13 章来说）；
-    * 熟悉本科水平的数学（对第 14 章来说）；
+    * 熟悉 `C++` (对全书来说)
+    * 熟悉本科水平的物理（对第 13 章来说；本章可选读）
+    * 熟悉本科水平的数学（对第 14 章来说；本章可选读）
     
 ## 我的测试系统
 * Linux: 主机编译器用的 `g++`。
 * Windows: 仅使用命令行解释器 `CMD`，主机编译器用 Visual Studio 中的 `cl`。在用 `nvcc` 编译 CUDA 程序时，可能需要添加 `-Xcompiler "/wd 4819"` 选项消除和 unicode 有关的警告。
 * 全书代码可在 `CUDA` 9.0-10.2 （包含）之间的版本运行。
-
 
 ## 目录和源代码条目
 
@@ -90,8 +93,8 @@ https://github.com/YouQixiaowu/CUDA-Programming-with-Python
 
 | 文件        | 知识点 |
 |:------------|:---------------|
-| `reduce1cpu.cu`     | `C++` 版本的规约函数 |
-| `reduce2gpu.cu`     | 仅使用全局内存和同时使用全局内存和共享内存的规约核函数|
+| `reduce1cpu.cu`     | `C++` 版本的归约函数 |
+| `reduce2gpu.cu`     | 仅使用全局内存和同时使用全局内存和共享内存的归约核函数|
 | `bank.cu`           | 使用共享内存实现矩阵转置并避免共享内存的 bank 冲突 |
 
 
@@ -99,7 +102,7 @@ https://github.com/YouQixiaowu/CUDA-Programming-with-Python
 
 | 文件        | 知识点 |
 |:------------|:---------------|
-| `reduce.cu`        | 在规约核函数中使用原子函数 `atomicAdd` |
+| `reduce.cu`        | 在归约核函数中使用原子函数 `atomicAdd` |
 | `neighbor1cpu.cu`  | CPU 版本的邻居列表构建函数 |
 | `neighbor2gpu.cu`  | GPU 版本的邻居列表构建函数，分使用和不使用原子函数的情况 |
 
@@ -135,7 +138,6 @@ https://github.com/YouQixiaowu/CUDA-Programming-with-Python
 | `cpp`     | C++ 版本的 MD 程序 |
 | `force-only`   | 仅将求力的函数移植到 CUDA |
 | `whole-code` | 全部移植到 CUDA |
-| `optimization` | 内存访问优化 |
   
 ### 第 14 章：CUDA 库
 | 文件        | 知识点 |
@@ -194,10 +196,10 @@ https://github.com/YouQixiaowu/CUDA-Programming-with-Python
 | 利用共享内存转置，且无 bank 冲突      | 1.4 ms | 2.5 ms | 2.3 ms | 4.2 ms |  |
 
 
-### 数组规约（第 8-10 章）
+### 数组归约（第 8-10 章）
 
 * 数组长度为 1.0e8，每个元素为 1.23。
-* 规约的精确结果为 123000000。
+* 归约的精确结果为 123000000。
 * GPU 为笔记本版本的 GeForce RTX 2070。
 * 下面是用**单精度**浮点数测试的结果：
 
@@ -228,6 +230,38 @@ https://github.com/YouQixiaowu/CUDA-Programming-with-Python
 
 
 
+### 分子动力学模拟（第 13 章）
 
+* 模拟体系为固态氩
+* GPU 为笔记本中的 RTX 2070，使用单精度浮点数
+* CPU 为 Intel i7-8750H 处理器
 
+#### CPU 版本计算速度测试
+* 原子数 N = 10^3 * 4 = 4000
+* 产出步数 = 20000
+* 各个部分所花时间见下表
 
+| 求力部分     | 运动方程积分部分 | 全部 | 
+|:----------------|:---------|:-----------|
+| 62 s| 0.7 s | 62.7 s |
+
+#### force-only 版本的计算速度测试
+
+| 原子数  | 产出步数   | 求力和数据传输的时间 | 运动方程积分的时间  | 全部时间 | 整体速度|
+|:----------------|:---------|:-----------|:-----------|:-----------|:-----------|
+| 4000 | 20000 | 5.8 s | 0.7 s  |  6.5 s  | 1.2e7 原子步每秒|
+| 32000 | 10000 | 5.0 s | 2.5 s  |  7.5 s  | 4.3e7 原子步每秒|
+| 108000 | 4000 | 5.4 s | 3.3 s  |  8.7 s  | 5.0e7 原子步每秒|
+| 256000 | 2000 | 5.4 s | 4.6 s  |  10 s  | 5.1e7 原子步每秒|
+
+#### whole-code 版本的计算速度测试
+
+| 原子数  | 产出步数   | 求力的时间 | 运动方程积分的时间 | 全部时间 | 整体速度|
+|:----------------|:---------|:-----------|:----------|:-----------|:-----------|
+| 4000 | 20000 | 1.5 s | 0.6 s  |  2.1 s  | 3.8e7 原子步每秒|
+| 32000 | 10000 | 1.6 s | 0.3 s  |  1.9 s  | 1.7e8 原子步每秒|
+| 108000 | 4000 | 2.0 s | 0.4 s  |  2.4 s  | 1.8e8 原子步每秒|
+| 256000 | 2000 | 2.2 s | 0.4 s  |  2.6 s  | 2.0e8 原子步每秒|
+
+## 第一次校稿后发现的错误（将在第二次校稿时改正）
+* 第10章warp.cu中的一个nask应该改成mask。
